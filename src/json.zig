@@ -21,20 +21,11 @@ fn JsonHashmap(comptime T: type) type {
             while (true) {
                 switch (try source.nextAlloc(allocator, .alloc_always)) {
                     .allocated_string => |string| {
-                        var resolved_options = options;
-                        // We need this option because we're only parsing
-                        // one struct from the entire json;
-                        // we won't end with an EOF
-                        resolved_options.allow_partial = true;
-                        // We need this options because our source could be
-                        // a stream. If it is, any strings referenced
-                        // in the parse will cause use-after-free
-                        resolved_options.allocate = .alloc_always;
-                        const value = try std.json.parseFromTokenSourceLeaky(
+                        const value = try std.json.innerParse(
                             T,
                             allocator,
                             source,
-                            resolved_options,
+                            options,
                         );
                         try map.put(string, value);
                     },
